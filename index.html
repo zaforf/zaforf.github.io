@@ -11,6 +11,23 @@
     -ms-user-select: none;
     user-select: none;
 }
+.button {
+	border: none;
+  background-color: #ffff;
+  opacity: 0.7;
+  padding: 14px 28px;
+  position: relative;
+  font-size: 50px;
+  cursor: pointer;
+  display: inline-block;
+  animation-name: slide;
+  animation-duration: 1s;
+  }
+.button:hover {opacity: 0.5;}
+@keyframes slide {
+	0% {left: -500px;}
+    100% {left: 0px;}
+    }
 body {
   background-size: cover;
   background-repeat: no-repeat;
@@ -18,13 +35,22 @@ body {
   text-align: right;
   color: black;
   font-family: "Century Gothic", sans-serif;
-  font-size: 700%
+  font-size: 500%;
   }
 </style>
 </head>
 <body>
 <div class="unselectable">
-<h1>zmonster8</h1>
+<h1>Zmonster8</h1>
+<button class ="button">america lorem ipsum</button>
+<br>
+<button class ="button" style="animation-duration: 1.5s;">america ee ipsum</button>
+<br>
+<button class ="button" style="animation-duration: 2s;">america ee ipsum</button>
+<br>
+<button class ="button" style="animation-duration: 2.5s;">america ee ipsum</button>
+<br>
+<button class ="button" style="animation-duration: 3s;">america ee ipsum</button>
 
 </body>
 </html>
