@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Mask Classifier</title>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+</head>
+<style>
+
+</style>
+<body >
+	<h1> Mask Classifier </h1>
+	<div>
+			<video id="video" style="margin:auto;display:inline-block;"></video>
+			<canvas id="output" style="margin:auto;position:relative;top:-480px;left:10px"></canvas>
+    </div>
+</body>
+<script>
+	var facefind, mask_model, ctx, videoWidth, videoHeight, canvas;
+	const video = document.getElementById('video');
+	const state = {
+	  backend: 'webgl'
+	};
+	async function setupCamera() {
+		const stream = await navigator.mediaDevices.getUserMedia({
+		    'audio': false,
+		    'video': { facingMode: 'user' },
+		});
+		video.srcObject = stream;
+	    return new Promise((resolve) => {
+		    video.onloadedmetadata = () => {
+		      resolve(video);
+		    };
+		});
+	}
+	const renderPrediction = async () => {
+		tf.engine().startScope()
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.beginPath();
+		const predictions = await facefind.estimateFaces(video, true,false,false);
+		const offset = tf.scalar(127.5);
+		if (predictions.length > 0) {		
+		    for (let i = 0; i < predictions.length; i++) {
+			    var start = predictions[i].topLeft.arraySync();
+			    var end = predictions[i].bottomRight.arraySync();
+			    var size = [end[0] - start[0], end[1] - start[1]];
+			    if(videoWidth<end[0] && videoHeight<end[0]){
+			    	console.log("image out of frame")
+			    	break
+			    }
+				var xscale=0.8,yscale=1.;
+			    var inputImage = tf.browser.fromPixels(video).toFloat();
+				// inputImage = inputImage.sub(offset).div(offset);
+			    result= Array.from(inputImage);
+				inputImage=inputImage.slice([parseInt(start[1]),parseInt(start[0]),0],[parseInt(size[1]*yscale),parseInt(size[0]*xscale),3]);
+				inputImage=inputImage.resizeBilinear([224,224]).reshape([1,224,224,3]);
+
+			    result=mask_model.predict(inputImage).dataSync()
+				if (result[2]>result[0]){
+					ctx.strokeStyle = "#8c3535";
+
+				}
+				// else if (result[0]>result[1] && result[0]>result[2]) {
+				// 	ctx.strokeStyle = "#3c784c";
+				// }
+				else {
+					ctx.strokeStyle = "#3c784c";
+				}
+
+			    ctx.beginPath();
+			    // if (result[1]>result[0]){
+			    // 	//no mask on
+			    //   	ctx.strokeStyle="red"
+			    //   	ctx.fillStyle = "red";
+			    //   	text = "No Mask: "+(result[1]*100).toPrecision(3).toString()+"%";
+			    // }else{
+			    // 	//mask on
+			    //   	ctx.strokeStyle="green"
+			    //   	ctx.fillStyle = "green";
+			    //   	text = "Mask: "+(result[0]*100).toPrecision(3).toString()+"%";
+			    // }
+		        ctx.lineWidth = "4"
+			    ctx.strokeRect(start[0], start[1], size[0]*xscale, size[1]*yscale);
+
+			    // ctx.font = "bold 15pt sans-serif";
+			    // ctx.fillText(text,start[0]+5,start[1]+20)
+		    }     
+		}
+		//update frame
+		requestAnimationFrame(renderPrediction);
+		tf.engine().endScope()
+	};
+
+	const setupPage = async () => {
+	    await tf.setBackend(state.backend);
+	    await setupCamera();
+	    video.play();
+	    videoWidth = video.videoWidth;
+	    videoHeight = video.videoHeight;
+	    video.width = videoWidth;
+	    video.height = videoHeight;
+
+	    canvas = document.getElementById('output');
+	    canvas.width = videoWidth;
+	    canvas.height = videoHeight;
+	    ctx = canvas.getContext('2d');
+	    ctx.fillStyle = "rgba(255, 0, 255, 1)"; 
+
+	    facefind = await blazeface.load();
+	    
+	    mask_model = await tf.loadGraphModel('../static/model/model.json');
+		renderPrediction();
+
+	};
+
+	setupPage();
+
+</script>
+</html>
