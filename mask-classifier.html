@@ -56,34 +56,34 @@
 				inputImage=inputImage.slice([parseInt(start[1]),parseInt(start[0]),0],[parseInt(size[1]),parseInt(size[0]),3]);
 				inputImage=inputImage.resizeBilinear([224,224]).reshape([1,224,224,3]);
 			    result=mask_model.predict(inputImage).dataSync()
+				console.log(result)
 				// result[0] result[1] result[2]
 				// mask	on	mask incorrect	mask off
-				if (result[2]>result[0]*2){
-					// no mask
-					ctx.strokeStyle = "#8c3535";
-					if (mo+mn>60)
-						if (mo==0)
-							mn--;
-						else
-							mo--;
-					mn++;
-				}
-				else {
+				if (result[0]>result[1]) {
 					ctx.strokeStyle = "#3c784c";
-					if (mo+mn>60)
+					if (mo+mn>30)
 						if (mn==0)
 							mo--;
 						else
 							mn--;
 					mo++;
 				}
-				if (mo+mn>60){
+				else {
+					// no mask
+					ctx.strokeStyle = "#8c3535";
+					if (mo+mn>30)
+						if (mo==0)
+							mn--;
+						else
+							mo--;
+					mn++;
+				}
+				if (mo+mn>30){
 					if (mo>mn)
 						document.getElementById("emoji").textContent="😷 You are wearing a mask!";
 					else
 						document.getElementById("emoji").textContent="😃 You are not wearing a mask!";
 				}
-				console.log(mo,mn);
 			    ctx.beginPath();
 		        ctx.lineWidth = "4"
 			    ctx.strokeRect(start[0], start[1], size[0], size[1]);
@@ -110,7 +110,7 @@
 	    ctx.fillStyle = "rgba(255, 0, 255, 1)"; 
 
 	    facefind = await blazeface.load();
-	    mask_model = await tf.loadGraphModel('../static/model/model.json');
+	    mask_model = await tf.loadLayersModel('../static/model/model.json');
 		renderPrediction();
 	};
 
