@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>Mask Classifier</title>
+	<link href="style.css" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 </head>
@@ -10,6 +11,7 @@
 </style>
 <body >
 	<h1> Mask Classifier </h1>
+	<span id="emoji" STYLE="font-size:20pt">😃</span>
 	<div>
 			<video id="video" style="margin:auto;display:inline-block;"></video>
 			<canvas id="output" style="margin:auto;position:relative;top:-480px;left:10px"></canvas>
@@ -21,15 +23,16 @@
 	const state = {
 	  backend: 'webgl'
 	};
+	var mn=0,mo=0;
 	async function setupCamera() {
 		const stream = await navigator.mediaDevices.getUserMedia({
-		    'audio': false,
+			'audio': false,
 		    'video': { facingMode: 'user' },
 		});
 		video.srcObject = stream;
 	    return new Promise((resolve) => {
 		    video.onloadedmetadata = () => {
-		      resolve(video);
+				resolve(video);
 		    };
 		});
 	}
@@ -48,42 +51,42 @@
 			    	console.log("image out of frame")
 			    	break
 			    }
-				var xscale=0.8,yscale=1.;
 			    var inputImage = tf.browser.fromPixels(video).toFloat();
-				// inputImage = inputImage.sub(offset).div(offset);
 			    result= Array.from(inputImage);
-				inputImage=inputImage.slice([parseInt(start[1]),parseInt(start[0]),0],[parseInt(size[1]*yscale),parseInt(size[0]*xscale),3]);
+				inputImage=inputImage.slice([parseInt(start[1]),parseInt(start[0]),0],[parseInt(size[1]),parseInt(size[0]),3]);
 				inputImage=inputImage.resizeBilinear([224,224]).reshape([1,224,224,3]);
-
 			    result=mask_model.predict(inputImage).dataSync()
-				if (result[2]>result[0]){
+				// result[0] result[1] result[2]
+				// mask	on	mask incorrect	mask off
+				if (result[2]>result[0]*2){
+					// no mask
 					ctx.strokeStyle = "#8c3535";
-
+					if (mo+mn>60)
+						if (mo==0)
+							mn--;
+						else
+							mo--;
+					mn++;
 				}
-				// else if (result[0]>result[1] && result[0]>result[2]) {
-				// 	ctx.strokeStyle = "#3c784c";
-				// }
 				else {
 					ctx.strokeStyle = "#3c784c";
+					if (mo+mn>60)
+						if (mn==0)
+							mo--;
+						else
+							mn--;
+					mo++;
 				}
-
+				if (mo+mn>60){
+					if (mo>mn)
+						document.getElementById("emoji").textContent="😷 You are wearing a mask!";
+					else
+						document.getElementById("emoji").textContent="😃 You are not wearing a mask!";
+				}
+				console.log(mo,mn);
 			    ctx.beginPath();
-			    // if (result[1]>result[0]){
-			    // 	//no mask on
-			    //   	ctx.strokeStyle="red"
-			    //   	ctx.fillStyle = "red";
-			    //   	text = "No Mask: "+(result[1]*100).toPrecision(3).toString()+"%";
-			    // }else{
-			    // 	//mask on
-			    //   	ctx.strokeStyle="green"
-			    //   	ctx.fillStyle = "green";
-			    //   	text = "Mask: "+(result[0]*100).toPrecision(3).toString()+"%";
-			    // }
 		        ctx.lineWidth = "4"
-			    ctx.strokeRect(start[0], start[1], size[0]*xscale, size[1]*yscale);
-
-			    // ctx.font = "bold 15pt sans-serif";
-			    // ctx.fillText(text,start[0]+5,start[1]+20)
+			    ctx.strokeRect(start[0], start[1], size[0], size[1]);
 		    }     
 		}
 		//update frame
@@ -107,10 +110,8 @@
 	    ctx.fillStyle = "rgba(255, 0, 255, 1)"; 
 
 	    facefind = await blazeface.load();
-	    
 	    mask_model = await tf.loadGraphModel('../static/model/model.json');
 		renderPrediction();
-
 	};
 
 	setupPage();

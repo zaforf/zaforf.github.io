@@ -30,12 +30,8 @@
     100% {left: 0px;}
     }
 body {
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-image: url("background.jpg");
-  text-align: right;
+  text-align: center;
   color: black;
   font-family: "Century Gothic", sans-serif;
-  font-size: 500%;
   transform: translateX(-20%);
   }
