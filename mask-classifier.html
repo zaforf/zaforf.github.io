@@ -9,11 +9,11 @@
 <style>
 
 </style>
-<body >
+<body STYLE="transition: background-color 1s ease;">
 	<h1> Mask Classifier </h1>
-	<span id="emoji" STYLE="font-size:20pt">😃</span>
+	<span id="emoji" STYLE="font-size:20pt;">😃</span>
 	<div>
-			<video id="video" style="margin:auto;display:inline-block;"></video>
+			<video id="video" style="margin:auto;display:block;"></video>
 			<canvas id="output" style="margin:auto;position:relative;top:-480px;left:10px"></canvas>
     </div>
 </body>
@@ -56,9 +56,8 @@
 				inputImage=inputImage.slice([parseInt(start[1]),parseInt(start[0]),0],[parseInt(size[1]),parseInt(size[0]),3]);
 				inputImage=inputImage.resizeBilinear([224,224]).reshape([1,224,224,3]);
 			    result=mask_model.predict(inputImage).dataSync()
-				console.log(result)
-				// result[0] result[1] result[2]
-				// mask	on	mask incorrect	mask off
+				// result[0] result[1]
+				// mask	on	mask off
 				if (result[0]==1) {
 					ctx.strokeStyle = "#3c784c";
 					if (mo+mn>30)
@@ -79,10 +78,13 @@
 					mn++;
 				}
 				if (mo+mn>30){
-					if (mo>mn)
+					if (mo>mn) {
 						document.getElementById("emoji").textContent="😷 You are wearing a mask!";
-					else
+						document.body.style.backgroundColor = "#C3E4DF";
+					} else {
 						document.getElementById("emoji").textContent="😃 You are not wearing a mask!";
+						document.body.style.backgroundColor = "#E4DF97";
+					}
 				}
 			    ctx.beginPath();
 		        ctx.lineWidth = "4"
