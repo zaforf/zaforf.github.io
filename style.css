@@ -133,6 +133,11 @@ h2 {
   width: 500px;
   height: auto;
   margin-top: 10px;
+  transition: 0.3s ease;
+}
+
+.project:hover {
+  scale: 1.03;
 }
 
 .textbox {
