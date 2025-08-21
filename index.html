@@ -1,86 +1,62 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zafir Nasim</title>
-    <link href="style.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-    <link rel="icon" href="images/favicon.ico">
-    <body>
-        <div class="unselectable" style="text-align: center;">
-            <div class="container"><h1 class="title overlay playfair-display">ZAFIR</h1><h1 class="title roboto">NASIM</h1></div>
-        </div>
-        <div class="page">
-            <p style="text-align: center; font-size: 24px"> student, programmer, and explorer </p>
-            <div class="banner roboto">projects</div>
-            <div class="table roboto">
-                <div class="column">
-                    <div class="project">
-                        <div class="img-container"><img src="images/compliment.png"></div>
-                        <div class="textbox">
-                            <h2>Compliment Generator</h2>
-                            <p style="font-size: 18px; margin-bottom: 10px;">A positive first step into JavaScript.</p>
-                            <p>After studying JavaScript, I asked some friends for ideas on what to make. They proposed a compliment generator,
-                                and I loved the idea. The compliments are not actually generated (instead pulled from a list made by ChatGPT),
-                                and all animations and particles are made through simple CSS and JavaScript. </p>
-                            <div style="display: flex; justify-content: center;">
-                                <a href="https://codepen.io/zaforf/pen/zYejbZP" target="_blank"><img class="icon" src="images/link.png"></a>
-                            </div>
-                        </div> 
-                    </div>
-                    <div class="project">
-                        <div class="img-container"><img src="images/grad.png"></div>
-                        <div class="textbox">
-                            <h2>Three.js Gradient Descent</h2>
-                            <p style="font-size: 18px; margin-bottom: 10px;">Going back to my Scratch roots.</p>
-                            <p>Halfway through my studies, I remembered one of the reasons I started learning web development—to continue making
-                                cool projects like I used to do on Scratch. Hence, I set out to learn Three.js and do exactly that. Briefly,
-                                this project simulates gradient descent in three dimensions for thousands of points, creating a tool
-                                to hopefully help others visualize an algorithm central to machine learning.</p>
-                        </div>
-                        <div style="display: flex; justify-content: center;">
-                            <a href="https://zaforf.github.io/threejsSGD/" target="_blank"><img class="icon" src="images/link.png"></a>
-                            <a href="https://github.com/zaforf/threejsSGD" target="_blank"><img class="icon" src="images/github.png"></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="project">
-                        <div class="img-container"><img src="images/sparkcoder.png"></div>
-                        <div class="textbox">
-                            <h2>SparkCoder</h2>
-                            <p style="font-size: 18px; margin-bottom: 10px;">Jumping into React with a custom site.</p>
-                            <p>I learned enough React to make a simple puzzle game, after which I set out to make a real site. Luckily, a friend
-                                leading a local teaching initiative had plans for an online learning system and needed someone to make them
-                                real. I rose to the challenge, and after a few days I was able to bring their designs to reality. </p>
-                        </div>
-                        <div style="display: flex; justify-content: center;">
-                            <a href="https://inclusive-computing-initiative.github.io/SparkCoder/#/" target="_blank"><img class="icon" src="images/link.png"></a>
-                            <a href="https://github.com/Inclusive-Computing-Initiative/SparkCoder" target="_blank"><img class="icon" src="images/github.png"></a>
-                        </div>
-                    </div>
-                    <div class="project">
-                        <div class="img-container"><img src="images/mentorlog.png"></div>
-                        <div class="textbox">
-                            <h2>Mentor Sign-Up Log</h2>
-                            <p style="font-size: 18px; margin-bottom: 10px;">Exploring Flask through a simple sign-up sheet.</p>
-                            <p>At last, I ventured into the backend. I didn't want to spend too long with the front-end or busy myself
-                                with the back-end tasks of a more complete application, so I elected to create something very simple.
-                                I had to face everything from password hashing to Docker container hosting, but overcoming these challenges
-                                on my own was incredibly gratifying.
-                            </p>
-                        </div>
-                        <div style="display: flex; justify-content: center;">
-                            <a href="https://mentorlog-dkiln.ondigitalocean.app/" target="_blank"><img class="icon" src="images/link.png"></a>
-                            <a href="https://github.com/zaforf/mentorlogapp/" target="_blank"><img class="icon" src="images/github.png"></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-    <script src="main.js"></script>
-</html>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+                Cantarell, "Helvetica Neue", sans-serif;
+  }
+</style>
+
+<body style="margin:0; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+  <div style="width:100%; height:20vh; display:flex; align-items:center; justify-content:center;">
+    <div style="font-size:80px;">Zafir</div>
+    <canvas id="canvas" width="224" height="224"></canvas>
+  </div>
+
+  <p style="color:rgba(0,0,0,0.6);">under construction</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+</body>
+
+<script>
+  let model;
+  const canvas = document.getElementById('canvas');
+  const modelType = 'smaller';
+
+  async function loadModel() {
+    model = await tf.loadGraphModel(modelType + '_decoder/model.json');
+    console.log("Model loaded");
+  }
+
+  function renderImageFromTensor(tensor) {
+    const imageTensor = tf.tidy(() => tensor.squeeze().mul(255).clipByValue(0, 255).cast('int32'));
+    tf.browser.toPixels(imageTensor, canvas);
+    imageTensor.dispose();
+  }
+
+  async function predictFromLatent(z0, z1) {
+    const z = tf.tensor2d([[z0, z1]]);
+    const output = model.predict(z);
+    renderImageFromTensor(output);
+    z.dispose();
+    output.dispose();
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if (!model) return;
+
+    let min_x, max_x, min_y, max_y;
+    if (modelType == 'small') {
+      min_x = -10; max_x = 1;
+      min_y = -2.5; max_y = 9;
+    } else if (modelType == 'smaller') {
+      min_x = -1.3; max_x = 7.5;
+      min_y = -7; max_y = 7.5;
+    }
+    const z0 = ((e.clientX - 0) / window.innerWidth) * (max_x - min_x) + min_x;
+    const z1 = ((e.clientY - 0) / window.innerHeight) * (max_y - min_y) + min_y;
+    predictFromLatent(z0, z1);
+  });
+
+  loadModel().then(() => {
+    predictFromLatent(-1.2, -6.8);
+  });
+</script>
