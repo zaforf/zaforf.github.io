@@ -1,17 +1,43 @@
 <style>
+  :root {
+    --content-offset-y: -20px;
+    --canvas-offset-y: 60px;
+    --canvas-content-nudge-y: -8px;
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
                 Cantarell, "Helvetica Neue", sans-serif;
   }
+
+  #canvas-wrap {
+    transform: translateY(var(--canvas-offset-y));
+  }
+
+  #content-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateY(var(--content-offset-y));
+  }
+
+  #canvas {
+    width: 480px;
+    height: 250px;
+    display: block;
+    transform: translateY(var(--canvas-content-nudge-y));
+  }
 </style>
 
 <body style="margin:0; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-  <div style="width:100%; height:20vh; display:flex; align-items:center; justify-content:center;">
-    <div style="font-size:80px;">Zafir</div>
-    <canvas id="canvas" width="224" height="224"></canvas>
-  </div>
+  <div id="content-wrap">
+    <div id="canvas-wrap" style="width:100%; height:20vh; display:flex; align-items:center; justify-content:center;">
+      <canvas id="canvas" width="224" height="224"></canvas>
+    </div>
 
-  <p style="color:rgba(0,0,0,0.6);">under construction</p>
+    <!-- <p style="color:rgba(0,0,0,0.6);">under construction</p> -->
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 </body>
@@ -19,7 +45,7 @@
 <script>
   let model;
   const canvas = document.getElementById('canvas');
-  const modelType = 'smaller';
+  const modelType = 'full';
 
   async function loadModel() {
     model = await tf.loadGraphModel(modelType + '_decoder/model.json');
@@ -50,6 +76,9 @@
     } else if (modelType == 'smaller') {
       min_x = -1.3; max_x = 7.5;
       min_y = -7; max_y = 7.5;
+    } else if (modelType == 'full') {
+      min_x = -3; max_x = 3;
+      min_y = -3; max_y = 3;
     }
     const z0 = ((e.clientX - 0) / window.innerWidth) * (max_x - min_x) + min_x;
     const z1 = ((e.clientY - 0) / window.innerHeight) * (max_y - min_y) + min_y;
@@ -57,6 +86,6 @@
   });
 
   loadModel().then(() => {
-    predictFromLatent(-1.2, -6.8);
+    predictFromLatent(0, 0);
   });
 </script>
