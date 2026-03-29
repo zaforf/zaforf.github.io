@@ -12,6 +12,7 @@
 
   #canvas-wrap {
     transform: translateY(var(--canvas-offset-y));
+    pointer-events: none;
   }
 
   #content-wrap {
@@ -27,6 +28,19 @@
     height: 250px;
     display: block;
     transform: translateY(var(--canvas-content-nudge-y));
+    pointer-events: none;
+  }
+
+  #footer-line a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  #footer-line {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
   }
 </style>
 
@@ -36,7 +50,9 @@
       <canvas id="canvas" width="224" height="224"></canvas>
     </div>
 
-    <!-- <p style="color:rgba(0,0,0,0.6);">under construction</p> -->
+    <p id="footer-line" style="color:rgba(0,0,0,0.6);">
+      <a id="blog-link" href="#">blog</a>
+    </p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -46,6 +62,13 @@
   let model;
   const canvas = document.getElementById('canvas');
   const modelType = 'full';
+
+  const BLOG_URL = 'https://zaforf.github.io/blog';
+
+  function initFooterLinks() {
+    const blogLink = document.getElementById('blog-link');
+    blogLink.href = BLOG_URL;
+  }
 
   async function loadModel() {
     model = await tf.loadGraphModel(modelType + '_decoder/model.json');
@@ -84,6 +107,8 @@
     const z1 = ((e.clientY - 0) / window.innerHeight) * (max_y - min_y) + min_y;
     predictFromLatent(z0, z1);
   });
+
+  initFooterLinks();
 
   loadModel().then(() => {
     predictFromLatent(0, 0);
