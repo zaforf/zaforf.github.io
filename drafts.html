@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Zafir Nasim — computer science and artificial intelligence.">
+  <title>Zafir Nasim</title>
+  <style>
+    :root { --ink: #111; --muted: rgba(17, 17, 17, .52); }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body { margin: 0; display: grid; place-items: center; color: var(--ink); background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .page { width: min(100% - 36px, 520px); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 44px 0 38px; text-align: center; }
+    .name { width: min(100%, 460px); height: 164px; display: block; }
+    .fallback-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .portrait { display: block; width: 170px; height: 226px; margin-top: 7px; object-fit: cover; object-position: 50% 31%; }
+    .links { margin: 22px 0 0; color: var(--muted); font-size: 12px; letter-spacing: .035em; }
+    .links a { color: inherit; text-decoration: none; }
+    .links a:hover, .links a:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .sep { padding: 0 8px; color: rgba(17,17,17,.22); }
+    @media (max-width: 520px) {
+      .page { width: min(100% - 28px, 420px); padding-top: 54px; }
+      .name { height: 132px; }
+      .portrait { width: 150px; height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1 class="fallback-name">Zafir Nasim</h1>
+    <canvas class="name" id="name-canvas" width="448" height="160" aria-label="Zafir Nasim"></canvas>
+    <img class="portrait" src="IMG_6217.JPG" alt="Portrait of Zafir Nasim at the Golden Gate Bridge">
+    <nav class="links" aria-label="Personal links">
+      <a href="https://github.com/zmonster8">github</a><span class="sep">·</span><a href="https://zaforf.github.io/blog">blog</a><span class="sep">·</span><a href="contact.html">contact</a>
+    </nav>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script>
+    const canvas = document.getElementById('name-canvas');
+    let model; let targetX = .5; let targetY = .5; let x = .5; let y = .5; let framePending = false;
+    function render(tensor) {
+      const pixels = tf.tidy(() => tensor.squeeze().mul(255).clipByValue(0, 255).cast('int32'));
+      tf.browser.toPixels(pixels, canvas); pixels.dispose();
+    }
+    async function draw() {
+      framePending = false; x += (targetX - x) * .14; y += (targetY - y) * .14;
+      if (model) { const z = tf.tensor2d([[x * 6 - 3, y * 6 - 3]]); const output = model.predict(z); render(output); z.dispose(); output.dispose(); }
+    }
+    function requestDraw() { if (!framePending) { framePending = true; requestAnimationFrame(draw); } }
+    document.addEventListener('pointermove', event => { targetX = event.clientX / innerWidth; targetY = event.clientY / innerHeight; requestDraw(); });
+    tf.loadGraphModel('full_decoder/model.json').then(loaded => { model = loaded; draw(); });
+  </script>
+</body>
+</html>
