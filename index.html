@@ -1,116 +1,43 @@
-<style>
-  :root {
-    --content-offset-y: -20px;
-    --canvas-offset-y: 60px;
-    --canvas-content-nudge-y: -8px;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-                Cantarell, "Helvetica Neue", sans-serif;
-  }
-
-  #canvas-wrap {
-    transform: translateY(var(--canvas-offset-y));
-    pointer-events: none;
-  }
-
-  #content-wrap {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transform: translateY(var(--content-offset-y));
-  }
-
-  #canvas {
-    width: 480px;
-    height: 250px;
-    display: block;
-    transform: translateY(var(--canvas-content-nudge-y));
-    pointer-events: none;
-  }
-
-  #footer-line a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  #footer-line {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-  }
-</style>
-
-<body style="margin:0; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-  <div id="content-wrap">
-    <div id="canvas-wrap" style="width:100%; height:20vh; display:flex; align-items:center; justify-content:center;">
-      <canvas id="canvas" width="224" height="224"></canvas>
-    </div>
-
-    <p id="footer-line" style="color:rgba(0,0,0,0.6);">
-      <a id="blog-link" href="#">blog</a>
-    </p>
-  </div>
-
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Personal homepage.">
+  <title>zaforf</title>
+  <style>
+    :root { --ink: #111; --muted: rgba(17,17,17,.5); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #fff; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(100% - 32px, 560px); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0; text-align: center; transform: translateY(-50px); }
+    .name-art { width: min(480px, 92vw); height: 180px; display: block; margin-top: 30px; margin-bottom: 18px; transform: translateY(75px); }
+    .fallback-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .portrait { display: block; width: 340px; height: 453px; margin-top: 0; object-fit: cover; object-position: 50% 31%; }
+    nav { margin-top: 30px; display: flex; align-items: baseline; gap: 14px; color: rgba(0,0,0,.6); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
+    nav a, nav button { color: inherit; text-decoration: none; }
+    nav a:hover, nav a:focus-visible, nav button:hover, nav button:focus-visible { color: rgba(0,0,0,.75); text-decoration: underline; text-underline-offset: 3px; }
+    nav button { padding: 0; border: 0; background: none; cursor: pointer; color: rgba(0,0,0,.6); font-family: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; text-transform: inherit; letter-spacing: inherit; vertical-align: baseline; }
+    .dot { color: rgba(17,17,17,.2); }
+    @media (max-width: 480px) { .name-art { width: min(480px, 94vw); height: 160px; margin-top: 24px; margin-bottom: 14px; transform: translateY(75px); } .portrait { width: 280px; height: 373px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <canvas id="name-art" class="name-art" width="224" height="224" aria-label="Generated name art"></canvas>
+    <img class="portrait" src="IMG_6217.JPG" alt="Portrait at the Golden Gate Bridge">
+    <nav aria-label="Personal links">
+      <a href="https://github.com/zaforf">github</a><span class="dot">·</span><a href="https://zaforf.github.io/blog">blog</a><span class="dot">·</span><button type="button" id="contact-link">contact</button>
+    </nav>
+  </main>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script>
+    const canvas = document.getElementById('name-art'); let model; let tx = .5; let ty = .5; let x = .5; let y = .5; let queued = false;
+    function render(tensor) { const pixels = tf.tidy(() => tensor.squeeze().mul(255).clipByValue(0,255).cast('int32')); tf.browser.toPixels(pixels, canvas); pixels.dispose(); }
+    function draw() { queued = false; x += (tx - x) * .12; y += (ty - y) * .12; if (model) { const z = tf.tensor2d([[x * 6 - 3, y * 6 - 3]]); const output = model.predict(z); render(output); z.dispose(); output.dispose(); } if (Math.abs(tx-x) > .001 || Math.abs(ty-y) > .001) requestDraw(); }
+    function requestDraw() { if (!queued) { queued = true; requestAnimationFrame(draw); } }
+    document.addEventListener('pointermove', event => { tx = event.clientX / innerWidth; ty = event.clientY / innerHeight; requestDraw(); });
+    document.getElementById('contact-link').addEventListener('click', () => alert('[first name].[last name]@gmail.com'));
+    tf.loadGraphModel('full_decoder/model.json').then(loaded => { model = loaded; draw(); });
+  </script>
 </body>
-
-<script>
-  let model;
-  const canvas = document.getElementById('canvas');
-  const modelType = 'full';
-
-  const BLOG_URL = 'https://zaforf.github.io/blog';
-
-  function initFooterLinks() {
-    const blogLink = document.getElementById('blog-link');
-    blogLink.href = BLOG_URL;
-  }
-
-  async function loadModel() {
-    model = await tf.loadGraphModel(modelType + '_decoder/model.json');
-    console.log("Model loaded");
-  }
-
-  function renderImageFromTensor(tensor) {
-    const imageTensor = tf.tidy(() => tensor.squeeze().mul(255).clipByValue(0, 255).cast('int32'));
-    tf.browser.toPixels(imageTensor, canvas);
-    imageTensor.dispose();
-  }
-
-  async function predictFromLatent(z0, z1) {
-    const z = tf.tensor2d([[z0, z1]]);
-    const output = model.predict(z);
-    renderImageFromTensor(output);
-    z.dispose();
-    output.dispose();
-  }
-
-  document.addEventListener('mousemove', (e) => {
-    if (!model) return;
-
-    let min_x, max_x, min_y, max_y;
-    if (modelType == 'small') {
-      min_x = -10; max_x = 1;
-      min_y = -2.5; max_y = 9;
-    } else if (modelType == 'smaller') {
-      min_x = -1.3; max_x = 7.5;
-      min_y = -7; max_y = 7.5;
-    } else if (modelType == 'full') {
-      min_x = -3; max_x = 3;
-      min_y = -3; max_y = 3;
-    }
-    const z0 = ((e.clientX - 0) / window.innerWidth) * (max_x - min_x) + min_x;
-    const z1 = ((e.clientY - 0) / window.innerHeight) * (max_y - min_y) + min_y;
-    predictFromLatent(z0, z1);
-  });
-
-  initFooterLinks();
-
-  loadModel().then(() => {
-    predictFromLatent(0, 0);
-  });
-</script>
+</html>
