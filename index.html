@@ -8,22 +8,22 @@
   <style>
     :root { --ink: #111; --muted: rgba(17,17,17,.5); }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #fff; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    main { width: min(100% - 32px, 560px); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0; text-align: center; transform: translateY(-50px); }
-    .name-art { width: min(480px, 92vw); height: 180px; display: block; margin-top: 30px; margin-bottom: 18px; transform: translateY(75px); }
-    .fallback-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    .portrait { display: block; width: 340px; height: 453px; margin-top: 0; object-fit: cover; object-position: 50% 31%; }
-    nav { margin-top: 30px; display: flex; align-items: baseline; gap: 14px; color: rgba(0,0,0,.6); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
+    body { margin: 0; height: 100vh; height: 100dvh; display: grid; place-items: center; overflow: hidden; background: #fff; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { --photo-size: min(300px, 76vw, max(0px, calc(100dvh - 182px))); width: min(100% - 32px, 560px); display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
+    .name-frame { width: min(480px, 92vw); height: 108px; flex: none; }
+    .name-art { width: 100%; height: 180px; display: block; transform: translateY(-15px); }
+    .portrait { display: block; width: var(--photo-size); height: var(--photo-size); margin-top: -24px; flex: none; object-fit: cover; object-position: 50% 100%; }
+    nav { display: flex; align-items: baseline; gap: 14px; color: rgba(0,0,0,.6); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
     nav a, nav button { color: inherit; text-decoration: none; }
     nav a:hover, nav a:focus-visible, nav button:hover, nav button:focus-visible { color: rgba(0,0,0,.75); text-decoration: underline; text-underline-offset: 3px; }
     nav button { padding: 0; border: 0; background: none; cursor: pointer; color: rgba(0,0,0,.6); font-family: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; text-transform: inherit; letter-spacing: inherit; vertical-align: baseline; }
     .dot { color: rgba(17,17,17,.2); }
-    @media (max-width: 480px) { .name-art { width: min(480px, 94vw); height: 160px; margin-top: 24px; margin-bottom: 14px; transform: translateY(75px); } .portrait { width: 280px; height: 373px; } }
+    @media (max-height: 440px) { main { --photo-size: min(220px, 60vw, max(0px, calc(100dvh - 140px))); gap: 12px; } .name-frame { height: 100px; } }
   </style>
 </head>
 <body>
   <main>
-    <canvas id="name-art" class="name-art" width="224" height="224" aria-label="Generated name art"></canvas>
+    <div class="name-frame"><canvas id="name-art" class="name-art" width="224" height="224" aria-label="Generated name art"></canvas></div>
     <img class="portrait" src="IMG_6217.JPG" alt="Portrait at the Golden Gate Bridge">
     <nav aria-label="Personal links">
       <a href="https://github.com/zaforf">github</a><span class="dot">·</span><a href="https://zaforf.github.io/blog">blog</a><span class="dot">·</span><button type="button" id="contact-link">contact</button>
@@ -31,9 +31,9 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script>
-    const canvas = document.getElementById('name-art'); let model; let tx = .5; let ty = .5; let x = .5; let y = .5; let queued = false;
+    const canvas = document.getElementById('name-art'); let model; let tx = .5; let ty = .5; let queued = false;
     function render(tensor) { const pixels = tf.tidy(() => tensor.squeeze().mul(255).clipByValue(0,255).cast('int32')); tf.browser.toPixels(pixels, canvas); pixels.dispose(); }
-    function draw() { queued = false; x += (tx - x) * .12; y += (ty - y) * .12; if (model) { const z = tf.tensor2d([[x * 6 - 3, y * 6 - 3]]); const output = model.predict(z); render(output); z.dispose(); output.dispose(); } if (Math.abs(tx-x) > .001 || Math.abs(ty-y) > .001) requestDraw(); }
+    function draw() { queued = false; if (model) { const z = tf.tensor2d([[tx * 6 - 3, ty * 6 - 3]]); const output = model.predict(z); render(output); z.dispose(); output.dispose(); } }
     function requestDraw() { if (!queued) { queued = true; requestAnimationFrame(draw); } }
     document.addEventListener('pointermove', event => { tx = event.clientX / innerWidth; ty = event.clientY / innerHeight; requestDraw(); });
     document.getElementById('contact-link').addEventListener('click', () => alert('[first name].[last name]@gmail.com'));
